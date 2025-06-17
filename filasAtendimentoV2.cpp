@@ -42,6 +42,25 @@ struct guiches
     FilaPonteiro* SenhasAtendidasGuiche;
 };
 
+void listarSenhasDeGuiche(NoGuiche* listaGuiches, int IDbuscado) {
+    NoGuiche* auxListar = listaGuiches;
+	
+	while (auxListar != NULL) {
+	    if (auxListar->dado.IDguiche == IDbuscado) {
+	        cout << "--- Senhas atendidas pelo guiche " << IDbuscado << " ---" << endl;
+            No* no auxListar->dado.SenhasAtendidasGuiche->ini;
+            while (no != NULL) {
+                cout << "Senha: " << no->dado << endl;
+                no = no->prox;
+            }
+            cout << "------------------------------------------" << endl;
+            return;
+        }
+		auxListar = auxListar->prox;
+	}
+	cout << "Guichê " << IDbuscado << " não encontrado." << endl;
+}
+
 struct FilaPonteiro
 {
 	No *ini;
@@ -129,7 +148,7 @@ int main()
     	FilaPonteiro* senhasGeradas = initPonteiro();
 	    NoGuiche* listaGuiches = NULL;
 	
-	int opcao = -1, contador = 1, IDescolhido = -1, i = 0;
+	int opcao = -1, contador = 1, IDescolhido = -1, i = 0, IDexibir = -1;
 
 	do {
         cout << "Senhas aguardando atendimento: " << countPonteiro(senhasGeradas) << endl;
@@ -197,6 +216,9 @@ int main()
             break;
         }
         case 4:
+            cout <<"Digite o ID do guichê: ";
+            cin >> IDexibir;
+            listarSenhasDeGuiche(listaGuiches, IDexibir);
             break;
         
         default:
