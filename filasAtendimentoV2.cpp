@@ -31,9 +31,10 @@ struct No
 	No *prox;
 };
 
-struct NoGuiche {
-    guiches dado;
-    NoGuiche* prox;
+struct FilaPonteiro
+{
+	No *ini;
+	No *fim;
 };
 
 struct guiches
@@ -42,30 +43,29 @@ struct guiches
     FilaPonteiro* SenhasAtendidasGuiche;
 };
 
+struct NoGuiche {
+    guiches dado;
+    NoGuiche* prox;
+};
+
 void listarSenhasDeGuiche(NoGuiche* listaGuiches, int IDbuscado) {
     NoGuiche* auxListar = listaGuiches;
 	
 	while (auxListar != NULL) {
 	    if (auxListar->dado.IDguiche == IDbuscado) {
 	        cout << "--- Senhas atendidas pelo guiche " << IDbuscado << " ---" << endl;
-            No* no auxListar->dado.SenhasAtendidasGuiche->ini;
+            No* no = auxListar->dado.SenhasAtendidasGuiche->ini;
             while (no != NULL) {
                 cout << "Senha: " << no->dado << endl;
                 no = no->prox;
             }
-            cout << "------------------------------------------" << endl;
+            cout << "------------------------------------------" << endl << endl;
             return;
         }
 		auxListar = auxListar->prox;
 	}
-	cout << "Guichê " << IDbuscado << " não encontrado." << endl;
+	cout << "Guichê " << IDbuscado << " não encontrado." << endl << endl;
 }
-
-struct FilaPonteiro
-{
-	No *ini;
-	No *fim;
-};
 
 FilaPonteiro *initPonteiro()
 {
@@ -146,10 +146,9 @@ void freeFilaPonteiro(FilaPonteiro *f)
 int main()
 {
     	FilaPonteiro* senhasGeradas = initPonteiro();
-	    NoGuiche* listaGuiches = NULL;
+	NoGuiche* listaGuiches = NULL;
 	
-	int opcao = -1, contador = 1, IDescolhido = -1, i = 0, IDexibir = -1;
-
+	int opcao = -1, contador = 1, IDescolhido = -1, i = 0, IDexibir = -1; // para não dar problema, iniciei como -1
 	do {
         cout << "Senhas aguardando atendimento: " << countPonteiro(senhasGeradas) << endl;
         cout << "Menu de opções" << endl
@@ -157,22 +156,36 @@ int main()
              << "1. Gerar senha" << endl
              << "2. Abrir guichê" << endl
              << "3. Realizar atendimento" << endl
-             << "4. Listar senhas atendidas" << endl
+             << "4. Listar senhas atendidas" << endl;
+    int guichesAbertos = 0;
+    NoGuiche* auxCont = listaGuiches;
+        while (auxCont != NULL) {
+            guichesAbertos++;
+            auxCont = auxCont->prox;
+        }
+        cout << "Guichês abertos: " << guichesAbertos << endl
              << "Escolha a opção que deseja: ";
 	    cin >> opcao;
+	    cout << endl;
 
     switch (opcao) {
         case 0:
             if (!isEmptyPonteiro(senhasGeradas)) {
-                cout << "Ainda tem " << countPonteiro(senhasGeradas) << " senhas em espera. Atenda todas antes de sair." << endl;
+                cout << "Ainda tem " << countPonteiro(senhasGeradas) << " senhas em espera. Atenda todas antes de sair." << endl<< endl;
                 opcao = -1; // para manter o loop aberto
             } else {
-                cout << "Senhas atendidas: " << countPonteiro(senhasAtendidas) << endl;
+                int totalAtendidas = 0;
+                NoGuiche* auxAtendidos = listaGuiches;
+                while (auxAtendidos != NULL) {
+                    totalAtendidas += countPonteiro(auxAtendidos->dado.SenhasAtendidasGuiche);
+                    auxAtendidos = auxAtendidos->prox;
+                }
+                cout << "Senhas atendidas: " << totalAtendidas << endl<< endl;;
             }       
             break;
         case 1:
             enqueuePonteiro(senhasGeradas, contador);
-            cout << "Senha gerada: " << contador << endl;
+            cout << "Senha gerada: " << contador << endl << endl;
             contador++;
             break;
         case 2:{
@@ -199,36 +212,43 @@ int main()
         		{
         		    int senha = dequeuePonteiro(senhasGeradas);
                     if (senha == -1) {
-                        cout << "Nenhuma senha para atender." << endl;
+                        cout << "Nenhuma senha para atender." << endl << endl;
                     } else {
                         enqueuePonteiro(aux->dado.SenhasAtendidasGuiche, senha);
-                        cout << "Senha atendida: "<< senha << endl;
+                        cout << "Senha atendida: "<< senha << endl << endl;
                     }
                     IDencontrado = true;
         		    break;
         		}
         		aux = aux->prox;
             }
-            if (!encontrado) 
+            if (!IDencontrado) 
             {
-                cout << "Nenhum guichê encontrado." << endl;
+                cout << "Nenhum guichê encontrado." << endl << endl;
             }
             break;
         }
         case 4:
             cout <<"Digite o ID do guichê: ";
             cin >> IDexibir;
+            cout << endl;
             listarSenhasDeGuiche(listaGuiches, IDexibir);
             break;
         
         default:
-            cout << "Digite uma opção válida" << endl;
+            cout << "Digite uma opção válida" << endl << endl;
             break;
         }
     } while(opcao != 0);
     
+    NoGuiche* atual = listaGuiches;
+    while (atual != NULL) {
+        NoGuiche* aux = atual->prox;
+        freeFilaPonteiro(atual->dado.SenhasAtendidasGuiche);
+        free(atual);
+        atual = aux;
+    }
     freeFilaPonteiro(senhasGeradas);
-    freeFilaPonteiro(senhasAtendidas);
 
     return 0;
 }
